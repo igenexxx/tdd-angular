@@ -1,7 +1,9 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { SignUpComponent } from './sign-up.component';
+import {SignUpComponent} from './sign-up.component';
 import {By} from "@angular/platform-browser";
+import {HttpTestingController, provideHttpClientTesting} from "@angular/common/http/testing";
+import {provideHttpClient} from "@angular/common/http";
 
 describe('SignUpComponent', () => {
   let component: SignUpComponent;
@@ -9,9 +11,13 @@ describe('SignUpComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SignUpComponent]
+      imports: [SignUpComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(SignUpComponent);
     component = fixture.componentInstance;
@@ -107,7 +113,7 @@ describe('SignUpComponent', () => {
 
 
     it('should send username, email and password to backend after form submit', () => {
-      const spiedFetch = spyOn(window, 'fetch');
+      const httpController = TestBed.inject(HttpTestingController);
 
       const signUp = fixture.debugElement;
       const usernameInput = signUp.query(By.css('input#username'));
@@ -130,14 +136,13 @@ describe('SignUpComponent', () => {
       const button = fixture.debugElement.query(By.css('button'))?.nativeElement as HTMLButtonElement;
       button?.click();
 
-      const [args] = spiedFetch.calls.allArgs();
-      const [, secondParam] = args as [string, RequestInit];
+      const req = httpController.expectOne('/api/1.0/users');
 
-      expect(secondParam.body).toEqual(JSON.stringify({
+      expect(req.request.body).toEqual({
         username: 'John',
-        password: 'P4ssw0rd',
         email: 'john@email.com',
-      }));
+        password: 'P4ssw0rd',
+      })
     });
   })
 });

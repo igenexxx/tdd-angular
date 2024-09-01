@@ -44,16 +44,10 @@ export class SignUpComponent {
   }
 
   onClickSignUp() {
-    fetch('/api/1.0/users', {
-      method: 'POST',
-      body: JSON.stringify({
-        username: this.username,
-        password: this.password,
-        email: this.email,
-      }),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+    this.http.post('/api/1.0/users', {
+      username: this.username,
+      email: this.email,
+      password: this.password,
+    }).subscribe();
   }
 }
