@@ -14,6 +14,19 @@ const setup = async () => {
   });
 }
 
+let requestBody: DefaultBodyType;
+const server = setupServer(
+  http.post('/api/1.0/users', async ({ request }) => {
+    requestBody = await request.json();
+
+    return HttpResponse.json({}, { status: 200 });
+  })
+);
+
+beforeAll(() => server.listen());
+
+afterAll(() => server.close());
+
 
 describe('SignUpComponent', () => {
   beforeEach(async () => {
@@ -58,16 +71,6 @@ describe('SignUpComponent', () => {
     });
 
     it('should send username, email and password to backend after form submit', async () => {
-      let requestBody: DefaultBodyType;
-      const server = setupServer(
-        http.post('/api/1.0/users', async ({ request }) => {
-          requestBody = await request.json();
-
-          return HttpResponse.json({}, { status: 200 });
-        })
-      );
-      server.listen();
-
       const username = screen.getByLabelText('Username');
       const email = screen.getByLabelText('Email');
       const password = screen.getByLabelText('Password');
