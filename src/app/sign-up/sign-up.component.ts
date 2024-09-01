@@ -1,4 +1,5 @@
-import {Component} from '@angular/core';
+import {Component, inject} from '@angular/core';
+import {HttpClient} from "@angular/common/http";
 
 @Component({
   selector: 'app-sign-up',
@@ -13,6 +14,8 @@ export class SignUpComponent {
   password: string = '';
   passwordRepeat: string = '';
   disabled = true;
+
+  http = inject(HttpClient);
 
   onChangePassword($event: Event) {
     this.password = ($event.target as HTMLInputElement).value;
@@ -47,7 +50,7 @@ export class SignUpComponent {
         username: this.username,
         password: this.password,
         email: this.email,
-    }),
+      }),
       headers: {
         'Content-Type': 'application/json'
       }

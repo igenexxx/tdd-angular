@@ -104,5 +104,40 @@ describe('SignUpComponent', () => {
 
       expect(button?.disabled).toBeFalsy();
     });
+
+
+    it('should send username, email and password to backend after form submit', () => {
+      const spiedFetch = spyOn(window, 'fetch');
+
+      const signUp = fixture.debugElement;
+      const usernameInput = signUp.query(By.css('input#username'));
+      const emailInput = signUp.query(By.css('input#email'));
+      const passwordInput = signUp.query(By.css('input#password'));
+      const passwordRepeatInput = signUp.query(By.css('input#password-repeat'));
+      const usernameInputEl = usernameInput.nativeElement;
+      const emailInputEl = emailInput.nativeElement;
+      const passwordInputEl = passwordInput.nativeElement;
+      const passwordRepeatEl = passwordRepeatInput.nativeElement;
+
+      usernameInputEl.value = 'John';
+      emailInputEl.value = 'john@email.com';
+      passwordInputEl.value = 'P4ssw0rd';
+      passwordRepeatEl.value = 'P4ssw0rd';
+      [usernameInputEl, emailInputEl, passwordInputEl, passwordRepeatEl].forEach(el => el.dispatchEvent(new Event('input')));
+
+      fixture.detectChanges();
+
+      const button = fixture.debugElement.query(By.css('button'))?.nativeElement as HTMLButtonElement;
+      button?.click();
+
+      const [args] = spiedFetch.calls.allArgs();
+      const [, secondParam] = args as [string, RequestInit];
+
+      expect(secondParam.body).toEqual(JSON.stringify({
+        username: 'John',
+        password: 'P4ssw0rd',
+        email: 'john@email.com',
+      }));
+    });
   })
 });
