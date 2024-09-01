@@ -1,18 +1,15 @@
-import {render, screen} from "@testing-library/angular";
+import {render, screen, waitFor} from "@testing-library/angular";
 import {SignUpComponent} from "./sign-up.component";
 import {userEvent} from "@testing-library/user-event";
 import 'whatwg-fetch';
 import {provideHttpClient} from "@angular/common/http";
-import {HttpTestingController, provideHttpClientTesting} from "@angular/common/http/testing";
-import {TestBed} from "@angular/core/testing";
-import { http } from 'msw';
-import { setupServer} from "msw/node";
+import {DefaultBodyType, http, HttpResponse} from 'msw';
+import {setupServer} from "msw/node";
 
 const setup = async () => {
   await render(SignUpComponent, {
     providers: [
       provideHttpClient(),
-      provideHttpClientTesting(),
     ]
   });
 }
@@ -61,7 +58,15 @@ describe('SignUpComponent', () => {
     });
 
     it('should send username, email and password to backend after form submit', async () => {
-      const httpController = TestBed.inject(HttpTestingController);
+      let requestBody: DefaultBodyType;
+      const server = setupServer(
+        http.post('/api/1.0/users', async ({ request }) => {
+          requestBody = await request.json();
+
+          return HttpResponse.json({}, { status: 200 });
+        })
+      );
+      server.listen();
 
       const username = screen.getByLabelText('Username');
       const email = screen.getByLabelText('Email');
@@ -76,14 +81,13 @@ describe('SignUpComponent', () => {
       const button = screen.getByRole('button', { name: 'Sign Up' });
       await userEvent.click(button);
 
-      const req = httpController.expectOne('/api/1.0/users');
-      const body = req.request.body;
-
-      expect(body).toEqual({
-        username: 'John',
-        password: 'P4ssw0rd',
-        email: 'john@doe.com',
-      });
+      await waitFor(() => {
+        expect(requestBody).toEqual({
+          username: 'John',
+          password: 'P4ssw0rd',
+          email: 'john@doe.com',
+        });
+      })
     });
   });
 });

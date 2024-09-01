@@ -4,4 +4,7 @@ module.exports = {
   globalSetup: 'jest-preset-angular/global-setup',
   testMatch: ['**/+(*.)+(jest).+(ts|js)?(x)'],
   testEnvironment: 'jsdom',
+  testEnvironmentOptions: {
+    customExportConditions: [''],
+  },
 }
