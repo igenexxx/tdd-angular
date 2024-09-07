@@ -4,6 +4,7 @@ import {SignUpComponent} from './sign-up.component';
 import {By} from "@angular/platform-browser";
 import {HttpTestingController, provideHttpClientTesting} from "@angular/common/http/testing";
 import {provideHttpClient} from "@angular/common/http";
+import {DebugElement} from "@angular/core";
 
 describe('SignUpComponent', () => {
   let component: SignUpComponent;
@@ -79,7 +80,7 @@ describe('SignUpComponent', () => {
       const el = fixture.debugElement;
       const button = el.query(By.css('button'));
 
-      expect(button?.nativeElement.textContent).toBe('Sign Up');
+      expect(button?.nativeElement.textContent).toContain('Sign Up');
     });
 
     it('should be disabled initially', () => {
@@ -91,31 +92,14 @@ describe('SignUpComponent', () => {
   })
 
   describe('Interactions', () => {
-    it('should enable submit button when password and repeat password have same value', () => {
-      const signUp = fixture.debugElement;
-      const passwordInput = signUp.query(By.css('input#password'));
-      const passwordRepeatInput = signUp.query(By.css('input#password-repeat'));
-      const passwordInputEl = passwordInput.nativeElement;
-      const passwordRepeatEl = passwordRepeatInput.nativeElement;
+    let button: HTMLButtonElement;
+    let httpController: HttpTestingController;
+    let signUp: DebugElement;
 
-      passwordInputEl.value = 'P4ssw0rd';
-      passwordInputEl.dispatchEvent(new Event('input'));
+    const setupForm = () => {
+      httpController = TestBed.inject(HttpTestingController);
 
-      passwordRepeatEl.value = 'P4ssw0rd';
-      passwordRepeatEl.dispatchEvent(new Event('input'));
-
-      fixture.detectChanges();
-
-      const button = fixture.debugElement.query(By.css('button'))?.nativeElement as HTMLButtonElement;
-
-      expect(button?.disabled).toBeFalsy();
-    });
-
-
-    it('should send username, email and password to backend after form submit', () => {
-      const httpController = TestBed.inject(HttpTestingController);
-
-      const signUp = fixture.debugElement;
+      signUp = fixture.debugElement;
       const usernameInput = signUp.query(By.css('input#username'));
       const emailInput = signUp.query(By.css('input#email'));
       const passwordInput = signUp.query(By.css('input#password'));
@@ -133,7 +117,19 @@ describe('SignUpComponent', () => {
 
       fixture.detectChanges();
 
-      const button = fixture.debugElement.query(By.css('button'))?.nativeElement as HTMLButtonElement;
+      button = fixture.debugElement.query(By.css('button'))?.nativeElement as HTMLButtonElement;
+    }
+
+    it('should enable submit button when password and repeat password have same value', () => {
+      setupForm();
+
+      expect(button?.disabled).toBeFalsy();
+    });
+
+
+    it('should send username, email and password to backend after form submit', () => {
+      setupForm();
+
       button?.click();
 
       const req = httpController.expectOne('/api/1.0/users');
@@ -143,6 +139,56 @@ describe('SignUpComponent', () => {
         email: 'john@email.com',
         password: 'P4ssw0rd',
       })
+    });
+
+    it('should have disabled sign up button during ongoing api call', () => {
+      setupForm();
+      button.click();
+      fixture.detectChanges();
+      button.click();
+
+      httpController.expectOne('/api/1.0/users');
+
+      expect(button.disabled).toBeTruthy();
+    });
+
+    it('should display spinner after clicking submit button', () => {
+      setupForm();
+      expect(signUp.query(By.css('span[role="status"]'))).toBeFalsy();
+
+      button.click();
+      fixture.detectChanges();
+
+      expect(signUp.query(By.css('span[role="status"]'))).toBeTruthy();
+    });
+
+    it('should display account activation notification after successful sign up request', () => {
+      setupForm();
+      button.click();
+
+      expect(signUp.query(By.css('.alert-success'))).toBeFalsy();
+
+      const req = httpController.expectOne('/api/1.0/users');
+      req.flush({});
+
+      fixture.detectChanges();
+
+      const message = signUp.query(By.css('.alert-success'))?.nativeElement;
+
+      expect(message.textContent).toContain('Please check your email to activate your account');
+    });
+
+    it('should hide sign up form after successful sign up request', () => {
+      setupForm();
+      expect(signUp.query(By.css('div[data-testid="form-sign-up"]'))).toBeTruthy();
+
+      button.click();
+      const req = httpController.expectOne('/api/1.0/users');
+      req.flush({});
+
+      fixture.detectChanges();
+
+      expect(signUp.query(By.css('div[data-testid="form-sign-up"]'))).toBeFalsy();
     });
   })
 });

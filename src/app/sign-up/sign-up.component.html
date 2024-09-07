@@ -1,17 +1,41 @@
-<h1>Sign Up</h1>
+<div
+  *ngIf="!isSignUpSuccess else notification"
+  class="col-lg-6 offset-lg-3 col-md-8 offset-md-2"
+>
+  <div class="card" data-testid="form-sign-up">
+    <div class="card-header text-center">
+      <h1>Sign Up</h1>
+    </div>
 
-<form (submit)="onClickSignUp(); $event.preventDefault()">
-  <label for="username">Username</label>
-  <input id="username" type="text" (input)="onChangeUsername($event)">
+    <form class="card-body" (submit)="onClickSignUp(); $event.preventDefault()">
+      <div class="mb-3">
+        <label class="form-label" for="username">Username</label>
+        <input class="form-control" id="username" type="text" (input)="onChangeUsername($event)">
+      </div>
 
-  <label for="email">Email</label>
-  <input id="email" type="email" (input)="onChangeEmail($event)">
+      <div class="mb-3">
+        <label class="form-label" for="email">Email</label>
+        <input class="form-control" id="email" type="email" (input)="onChangeEmail($event)">
+      </div>
 
-  <label for="password">Password</label>
-  <input id="password" type="password" (input)="onChangePassword($event)">
+      <div class="mb-3">
+        <label class="form-label" for="password">Password</label>
+        <input class="form-control" id="password" type="password" (input)="onChangePassword($event)">
+      </div>
 
-  <label for="password-repeat">Repeat password</label>
-  <input id="password-repeat" type="password" (input)="onChangePasswordRepeat($event)">
+      <div class="mb-3">
+        <label class="form-label" for="password-repeat">Repeat password</label>
+        <input class="form-control" id="password-repeat" type="password" (input)="onChangePasswordRepeat($event)">
+      </div>
 
-  <button [disabled]="disabled">Sign Up</button>
-</form>
+      <div class="text-center">
+        <app-button [disabled]="disabled" [isLoading]="isLoading">Sign Up</app-button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<ng-template #notification>
+  <app-alert>Please check your email to activate your account</app-alert>
+</ng-template>
