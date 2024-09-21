@@ -4,6 +4,9 @@ import {finalize} from "rxjs";
 import {NgIf} from "@angular/common";
 import {AlertComponent} from "../shared/alert/alert.component";
 import {ButtonComponent} from "../shared/button/button.component";
+import {UserService} from "../core/user.service";
+import {FormsModule} from "@angular/forms";
+
 
 @Component({
   selector: 'app-sign-up',
@@ -11,7 +14,8 @@ import {ButtonComponent} from "../shared/button/button.component";
   imports: [
     NgIf,
     AlertComponent,
-    ButtonComponent
+    ButtonComponent,
+    FormsModule
   ],
   templateUrl: './sign-up.component.html',
   styleUrl: './sign-up.component.scss'
@@ -25,44 +29,16 @@ export class SignUpComponent {
   isLoading = false;
   isSignUpSuccess = false;
 
-  http = inject(HttpClient);
-
-  onChangePassword($event: Event) {
-    this.password = ($event.target as HTMLInputElement).value;
-    this.updateDisabledStatus();
-  }
-
-  onChangePasswordRepeat($event: Event) {
-    this.passwordRepeat = ($event.target as HTMLInputElement).value;
-    this.updateDisabledStatus();
-  }
-
-  updateDisabledStatus(): void {
-    if (!this.password && !this.passwordRepeat) {
-      return;
-    }
-
-    this.disabled = this.password !== this.passwordRepeat;
-  }
-
-  onChangeUsername($event: Event) {
-    this.username = ($event.target as HTMLInputElement).value;
-  }
-
-  onChangeEmail($event: Event) {
-    this.email = ($event.target as HTMLInputElement).value;
-  }
+  userService = inject(UserService);
 
   onClickSignUp() {
     this.isLoading = true;
-    this.http.post('/api/1.0/users', {
+    this.userService.signUp({
       username: this.username,
       email: this.email,
-      password: this.password,
+      password: this.password
     }).pipe(
-      finalize(() => this.isLoading = false),
-    ).subscribe(() => {
-      this.isSignUpSuccess = true;
-    });
+      finalize(() => this.isLoading = false)
+    ).subscribe({ next: () => this.isSignUpSuccess = true });
   }
 }

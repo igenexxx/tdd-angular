@@ -10,26 +10,27 @@
     <form class="card-body" (submit)="onClickSignUp(); $event.preventDefault()">
       <div class="mb-3">
         <label class="form-label" for="username">Username</label>
-        <input class="form-control" id="username" type="text" (input)="onChangeUsername($event)">
+        <input [(ngModel)]="username" class="form-control" id="username" type="text" name="username">
       </div>
 
       <div class="mb-3">
         <label class="form-label" for="email">Email</label>
-        <input class="form-control" id="email" type="email" (input)="onChangeEmail($event)">
+        <input [(ngModel)]="email" class="form-control" id="email" type="email" name="email">
       </div>
 
       <div class="mb-3">
         <label class="form-label" for="password">Password</label>
-        <input class="form-control" id="password" type="password" (input)="onChangePassword($event)">
+        <input [(ngModel)]="password" class="form-control" id="password" type="password" name="password">
       </div>
 
       <div class="mb-3">
         <label class="form-label" for="password-repeat">Repeat password</label>
-        <input class="form-control" id="password-repeat" type="password" (input)="onChangePasswordRepeat($event)">
+        <input [(ngModel)]="passwordRepeat" class="form-control" id="password-repeat" type="password" name="password-repeat">
       </div>
 
       <div class="text-center">
-        <app-button [disabled]="disabled" [isLoading]="isLoading">Sign Up</app-button>
+        <app-button [disabled]="!password || !passwordRepeat || password !== passwordRepeat" [isLoading]="isLoading">Sign
+          Up</app-button>
       </div>
 
     </form>

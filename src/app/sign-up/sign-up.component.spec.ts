@@ -4,7 +4,8 @@ import {SignUpComponent} from './sign-up.component';
 import {By} from "@angular/platform-browser";
 import {HttpTestingController, provideHttpClientTesting} from "@angular/common/http/testing";
 import {provideHttpClient} from "@angular/common/http";
-import {DebugElement} from "@angular/core";
+import {DebugElement, importProvidersFrom} from "@angular/core";
+import {FormsModule} from "@angular/forms";
 
 describe('SignUpComponent', () => {
   let component: SignUpComponent;
@@ -16,6 +17,7 @@ describe('SignUpComponent', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
+        // importProvidersFrom(FormsModule),
       ]
     })
       .compileComponents();
@@ -96,10 +98,12 @@ describe('SignUpComponent', () => {
     let httpController: HttpTestingController;
     let signUp: DebugElement;
 
-    const setupForm = () => {
+    const setupForm = async () => {
       httpController = TestBed.inject(HttpTestingController);
 
       signUp = fixture.debugElement;
+
+      await fixture.whenStable();
       const usernameInput = signUp.query(By.css('input#username'));
       const emailInput = signUp.query(By.css('input#email'));
       const passwordInput = signUp.query(By.css('input#password'));
@@ -117,18 +121,18 @@ describe('SignUpComponent', () => {
 
       fixture.detectChanges();
 
-      button = fixture.debugElement.query(By.css('button'))?.nativeElement as HTMLButtonElement;
+      button = signUp.query(By.css('button'))?.nativeElement as HTMLButtonElement;
     }
 
-    it('should enable submit button when password and repeat password have same value', () => {
-      setupForm();
+    it('should enable submit button when password and repeat password have same value', async () => {
+      await setupForm();
 
       expect(button?.disabled).toBeFalsy();
     });
 
 
-    it('should send username, email and password to backend after form submit', () => {
-      setupForm();
+    it('should send username, email and password to backend after form submit', async () => {
+      await setupForm();
 
       button?.click();
 
@@ -141,8 +145,8 @@ describe('SignUpComponent', () => {
       })
     });
 
-    it('should have disabled sign up button during ongoing api call', () => {
-      setupForm();
+    it('should have disabled sign up button during ongoing api call', async () => {
+      await setupForm();
       button.click();
       fixture.detectChanges();
       button.click();
@@ -152,8 +156,8 @@ describe('SignUpComponent', () => {
       expect(button.disabled).toBeTruthy();
     });
 
-    it('should display spinner after clicking submit button', () => {
-      setupForm();
+    it('should display spinner after clicking submit button', async () => {
+      await setupForm();
       expect(signUp.query(By.css('span[role="status"]'))).toBeFalsy();
 
       button.click();
@@ -162,8 +166,8 @@ describe('SignUpComponent', () => {
       expect(signUp.query(By.css('span[role="status"]'))).toBeTruthy();
     });
 
-    it('should display account activation notification after successful sign up request', () => {
-      setupForm();
+    it('should display account activation notification after successful sign up request', async () => {
+      await setupForm();
       button.click();
 
       expect(signUp.query(By.css('.alert-success'))).toBeFalsy();
@@ -178,8 +182,8 @@ describe('SignUpComponent', () => {
       expect(message.textContent).toContain('Please check your email to activate your account');
     });
 
-    it('should hide sign up form after successful sign up request', () => {
-      setupForm();
+    it('should hide sign up form after successful sign up request', async () => {
+      await setupForm();
       expect(signUp.query(By.css('div[data-testid="form-sign-up"]'))).toBeTruthy();
 
       button.click();
