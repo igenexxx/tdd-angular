@@ -195,4 +195,38 @@ describe('SignUpComponent', () => {
       expect(signUp.query(By.css('div[data-testid="form-sign-up"]'))).toBeFalsy();
     });
   })
+
+  describe('Validation', () => {
+    const getValidationMessageEl = (testId: string) => fixture.debugElement.query(By.css(`div[data-testid="${testId}"`))?.nativeElement;
+
+    it('should display Username is required if username field is empty', () => {
+      const signUp = fixture.debugElement;
+      const usernameInput = signUp.query(By.css('input#username')).nativeElement;
+
+      expect(getValidationMessageEl('username-validation')).toBeUndefined();
+
+      usernameInput.dispatchEvent(new Event('focus'));
+      usernameInput.dispatchEvent(new Event('blur'));
+
+      fixture.detectChanges();
+
+      expect(getValidationMessageEl('username-validation')?.textContent).toContain('Username is required');
+    });
+
+    it('should length error when username is less then 4 characters', () => {
+      const signUp = fixture.debugElement;
+      const usernameInput = signUp.query(By.css('input#username')).nativeElement;
+
+      expect(getValidationMessageEl('username-validation')).toBeUndefined();
+
+      usernameInput.value = '123';
+      usernameInput.dispatchEvent(new Event('input'));
+      usernameInput.dispatchEvent(new Event('blur'));
+
+      fixture.detectChanges();
+
+      expect(getValidationMessageEl('username-validation')?.textContent)
+        .toContain('Username must be at least 4 character long');
+    });
+  })
 });

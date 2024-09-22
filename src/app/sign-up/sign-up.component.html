@@ -7,30 +7,40 @@
       <h1>Sign Up</h1>
     </div>
 
-    <form class="card-body" (submit)="onClickSignUp(); $event.preventDefault()">
+    errors: {{ form.get('username')?.errors | json }}
+
+    <form [formGroup]="form" class="card-body" (ngSubmit)="onClickSignUp()">
       <div class="mb-3">
         <label class="form-label" for="username">Username</label>
-        <input [(ngModel)]="username" class="form-control" id="username" type="text" name="username">
+        <input formControlName="username" class="form-control" id="username" type="text">
+        <div data-testid="username-validation" *ngIf="form.get('username')?.errors && (form.get('username')?.touched
+        || form.get('username')?.dirty)">
+          <div *ngIf="form.get('username')?.errors?.['required']">
+            Username is required
+          </div>
+          <div *ngIf="form.get('username')?.errors?.['minlength']">
+            Username must be at least 4 character long
+          </div>
+        </div>
       </div>
 
       <div class="mb-3">
         <label class="form-label" for="email">Email</label>
-        <input [(ngModel)]="email" class="form-control" id="email" type="email" name="email">
+        <input formControlName="email" class="form-control" id="email" type="email">
       </div>
 
       <div class="mb-3">
         <label class="form-label" for="password">Password</label>
-        <input [(ngModel)]="password" class="form-control" id="password" type="password" name="password">
+        <input formControlName="password" class="form-control" id="password" type="password">
       </div>
 
       <div class="mb-3">
         <label class="form-label" for="password-repeat">Repeat password</label>
-        <input [(ngModel)]="passwordRepeat" class="form-control" id="password-repeat" type="password" name="password-repeat">
+        <input formControlName="passwordRepeat" class="form-control" id="password-repeat" type="password">
       </div>
 
       <div class="text-center">
-        <app-button [disabled]="!password || !passwordRepeat || password !== passwordRepeat" [isLoading]="isLoading">Sign
-          Up</app-button>
+        <app-button [disabled]="isDisabled" [isLoading]="isLoading">Sign Up</app-button>
       </div>
 
     </form>

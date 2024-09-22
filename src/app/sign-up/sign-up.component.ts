@@ -1,12 +1,14 @@
 import {Component, inject} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
 import {finalize} from "rxjs";
-import {NgIf} from "@angular/common";
+import {JsonPipe, NgIf} from "@angular/common";
 import {AlertComponent} from "../shared/alert/alert.component";
 import {ButtonComponent} from "../shared/button/button.component";
 import {UserService} from "../core/user.service";
-import {FormsModule} from "@angular/forms";
+import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
 
+type NonNullableProperties<T> = {
+  [P in keyof T]-?: NonNullable<T[P]>;
+};
 
 @Component({
   selector: 'app-sign-up',
@@ -15,16 +17,19 @@ import {FormsModule} from "@angular/forms";
     NgIf,
     AlertComponent,
     ButtonComponent,
-    FormsModule
+    ReactiveFormsModule,
+    JsonPipe,
   ],
   templateUrl: './sign-up.component.html',
   styleUrl: './sign-up.component.scss'
 })
 export class SignUpComponent {
-  email = '';
-  username = '';
-  password: string = '';
-  passwordRepeat: string = '';
+  form = new FormGroup({
+    username: new FormControl('', [Validators.required, Validators.minLength(4)]),
+    email: new FormControl(''),
+    password: new FormControl(''),
+    passwordRepeat: new FormControl(''),
+  })
   disabled = true;
   isLoading = false;
   isSignUpSuccess = false;
@@ -32,13 +37,14 @@ export class SignUpComponent {
   userService = inject(UserService);
 
   onClickSignUp() {
+    const { passwordRepeat, ...formBody } = this.form.value;
     this.isLoading = true;
-    this.userService.signUp({
-      username: this.username,
-      email: this.email,
-      password: this.password
-    }).pipe(
+    this.userService.signUp(formBody as NonNullableProperties<typeof formBody>).pipe(
       finalize(() => this.isLoading = false)
     ).subscribe({ next: () => this.isSignUpSuccess = true });
+  }
+
+  get isDisabled(): boolean {
+    return !this.form.get('password')?.value || this.form.get('password')?.value !== this.form.get('passwordRepeat')?.value;
   }
 }

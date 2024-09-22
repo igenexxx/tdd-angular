@@ -34,6 +34,22 @@ beforeEach(() => {
   counter = 0;
 })
 
+let button: HTMLButtonElement;
+
+const setupForm = async () => {
+  const username = screen.getByLabelText('Username');
+  const email = screen.getByLabelText('Email');
+  const password = screen.getByLabelText('Password');
+  const passwordRepeat = screen.getByLabelText('Repeat password');
+
+  await userEvent.type(username, 'John');
+  await userEvent.type(email, 'john@doe.com');
+  await userEvent.type(password, "P4ssw0rd");
+  await userEvent.type(passwordRepeat, "P4ssw0rd");
+
+  button = screen.getByRole('button', { name: 'Sign Up' });
+}
+
 
 describe('SignUpComponent', () => {
   beforeEach(async () => {
@@ -66,21 +82,7 @@ describe('SignUpComponent', () => {
   })
 
   describe('Interactions', () => {
-    let button: HTMLButtonElement;
 
-    const setupForm = async () => {
-      const username = screen.getByLabelText('Username');
-      const email = screen.getByLabelText('Email');
-      const password = screen.getByLabelText('Password');
-      const passwordRepeat = screen.getByLabelText('Repeat password');
-
-      await userEvent.type(username, 'John');
-      await userEvent.type(email, 'john@doe.com');
-      await userEvent.type(password, "P4ssw0rd");
-      await userEvent.type(passwordRepeat, "P4ssw0rd");
-
-      button = screen.getByRole('button', { name: 'Sign Up' });
-    }
 
     it('should enable submit button when password and repeat password have same value', async () => {
       await setupForm();
@@ -149,4 +151,33 @@ describe('SignUpComponent', () => {
       expect(form).not.toBeInTheDocument();
     });
   });
+
+  describe('Validation', () => {
+    it('should display Username is required if username field is empty', async () => {
+      const message = 'Username is required';
+
+      expect(screen.queryByText(message)).not.toBeInTheDocument();
+
+      const usernameInputEl = screen.getByLabelText('Username')
+
+      await userEvent.click(usernameInputEl);
+      await userEvent.tab();
+
+      expect(screen.queryByText(message)).toBeInTheDocument();
+    });
+
+    it('should length error when username is less then 4 characters', async () =>
+    {
+      const message = 'Username must be at least 4 character long';
+
+      expect(screen.queryByText(message)).not.toBeInTheDocument();
+
+      const usernameInputEl = screen.getByLabelText('Username')
+
+      await userEvent.type(usernameInputEl, '123');
+      await userEvent.tab();
+
+      expect(screen.queryByText(message)).toBeInTheDocument();
+    });
+  })
 });
